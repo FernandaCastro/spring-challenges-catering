@@ -15,16 +15,19 @@ public class CateringJobController {
     private final CateringJobRepository cateringJobRepository;
 
     @GetMapping
-    @ResponseBody
-    public List<CateringJob> all(){
+    public List<CateringJob> findAll(){
         return cateringJobRepository.findAll();
     }
 
     @GetMapping("/{id}")
-    @ResponseBody
-    public CateringJob oneById(@PathVariable Long id){
+    public CateringJob findById(@PathVariable Long id){
         return cateringJobRepository.findById(id)
                 .orElseThrow(()->new HttpClientErrorException(HttpStatus.NOT_FOUND));
+    }
+
+    @GetMapping("/findByStatus")
+    public List<CateringJob> findAllByStatus(@RequestParam Status status){
+        return cateringJobRepository.findByStatus(status);
     }
 
 
