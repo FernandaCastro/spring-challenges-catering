@@ -30,5 +30,9 @@ public class CateringJobController {
         return cateringJobRepository.findByStatus(status);
     }
 
-
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public CateringJob create(@RequestBody CateringJob cateringJob){
+        return cateringJobRepository.save(cateringJob);
+    }
 }

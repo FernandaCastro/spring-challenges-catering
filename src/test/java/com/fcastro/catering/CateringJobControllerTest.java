@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
@@ -16,7 +17,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.http.converter.json.Jackson2ObjectMapperBuilder.json;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -30,7 +33,7 @@ public class CateringJobControllerTest {
     CateringJobRepository cateringJobRepository;
 
     @BeforeAll
-    private static void fetchCateringJobList(){
+    private static void fetchCateringJobList() {
         cateringJobList = new ArrayList<>();
         cateringJobList.add(CateringJob.builder()
                 .id(1L)
@@ -52,7 +55,7 @@ public class CateringJobControllerTest {
     }
 
     @Test
-    public void whenFindAll_ReturnList() throws Exception{
+    public void whenFindAll_ReturnList() throws Exception {
         //given
         given(cateringJobRepository.findAll()).willReturn(cateringJobList);
 
@@ -63,7 +66,7 @@ public class CateringJobControllerTest {
     }
 
     @Test
-    public void whenFindById_ReturnCateringJob() throws Exception{
+    public void whenFindById_ReturnCateringJob() throws Exception {
         //given
         given(cateringJobRepository.findById(anyLong())).willReturn(Optional.of(cateringJobList.get(0)));
 
@@ -74,7 +77,7 @@ public class CateringJobControllerTest {
     }
 
     @Test
-    public void whenFindByStatus_ReturnCateringJob() throws Exception{
+    public void whenFindByStatus_ReturnCateringJob() throws Exception {
         //given
         given(cateringJobRepository.findByStatus(any(Status.class))).willReturn(List.of(cateringJobList.get(1)));
 
@@ -82,5 +85,27 @@ public class CateringJobControllerTest {
         mockMvc.perform(get("/cateringJobs/findByStatus?status=COMPLETED"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)));
+    }
+
+    @Test
+    public void whenPOSTNewCateringJob_ReturnSuccess() throws Exception{
+        //given
+        CateringJob cateringJob = CateringJob.builder()
+                .id(10L)
+                .customerName("Mary")
+                .email("mary@mary.com")
+                .menu("Standard")
+                .noOfGuests(50)
+                .status(Status.NOT_STARTED)
+                .build();
+        given(cateringJobRepository.save(any(CateringJob.class))).willReturn(cateringJob);
+
+        //when //then
+        mockMvc.perform(post("/cateringJobs")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json().build().writeValueAsString(cateringJob)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id", is(10)));
+
     }
 }
