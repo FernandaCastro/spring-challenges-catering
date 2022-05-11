@@ -1,5 +1,9 @@
 package com.fcastro.catering;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.internal.filter.ValueNodes;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -23,9 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.converter.json.Jackson2ObjectMapperBuilder.json;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -135,7 +137,7 @@ public class CateringJobControllerTest {
     }
 
     @Test
-    public void whenPUTNotExistCateringJob_ReturnNOT_FOUND() throws Exception{
+    public void whenPUTNotExistCateringJob_ReturnNOT_FOUND(){
         //given
         CateringJob cateringJob = CateringJob.builder()
                 .id(10L)
@@ -155,5 +157,64 @@ public class CateringJobControllerTest {
         });
         assertThat(thrown.getCause()).isInstanceOf(HttpClientErrorException.class);
         assertThat(((HttpClientErrorException)thrown.getCause()).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void whenPATCHExistingCateringJob_UpdateAndReturnSuccess() throws Exception{
+        //given
+        CateringJob cateringJob = CateringJob.builder()
+                .id(10L)
+                .menu("Standard")
+                .build();
+        given(cateringJobRepository.findById(anyLong())).willReturn(Optional.ofNullable(cateringJob));
+        given(cateringJobRepository.save(any(CateringJob.class))).willReturn(cateringJob);
+
+        String menuJsonNode = "{\"menu\":\"Special\"}";
+
+        //when //then
+        mockMvc.perform(patch("/cateringJobs/10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(menuJsonNode))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    public void whenPATCHNotExistCateringJob_ReturnNOT_FOUND() {
+        //given
+        CateringJob cateringJob = CateringJob.builder()
+                .id(10L)
+                .menu("Standard")
+                .build();
+        given(cateringJobRepository.findById(anyLong())).willReturn(Optional.ofNullable(null));
+
+        String menuJsonNode = "{\"menu\":\"Special\"}";
+
+        //when //then
+        Exception thrown = Assertions.assertThrows(Exception.class, () -> {
+            mockMvc.perform(patch("/cateringJobs/10")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(menuJsonNode));
+        });
+        assertThat(thrown.getCause()).isInstanceOf(HttpClientErrorException.class);
+        assertThat(((HttpClientErrorException)thrown.getCause()).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void whenPATCHNullMenu_ReturnBAD_REQUEST(){
+        //given
+        CateringJob cateringJob = CateringJob.builder()
+                .id(10L)
+                .menu("Standard")
+                .build();
+        String menuJsonNode = "{}";
+
+        //when //then
+        Exception thrown = Assertions.assertThrows(Exception.class, () -> {
+            mockMvc.perform(patch("/cateringJobs/10")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(menuJsonNode));
+        });
+        assertThat(thrown.getCause()).isInstanceOf(HttpClientErrorException.class);
+        assertThat(((HttpClientErrorException)thrown.getCause()).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 }
