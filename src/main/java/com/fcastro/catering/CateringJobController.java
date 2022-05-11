@@ -35,4 +35,15 @@ public class CateringJobController {
     public CateringJob create(@RequestBody CateringJob cateringJob){
         return cateringJobRepository.save(cateringJob);
     }
+
+    @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CateringJob update(@RequestBody CateringJob cateringJob, @PathVariable Long id){
+        if (cateringJobRepository.existsById(id)) {
+            cateringJob.setId(id);
+            return cateringJobRepository.save(cateringJob);
+        } else{
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND);
+        }
+    }
 }

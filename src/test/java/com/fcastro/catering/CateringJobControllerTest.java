@@ -1,17 +1,22 @@
 package com.fcastro.catering;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.util.NestedServletException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,6 +25,7 @@ import static org.mockito.BDDMockito.given;
 import static org.springframework.http.converter.json.Jackson2ObjectMapperBuilder.json;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -104,8 +110,50 @@ public class CateringJobControllerTest {
         mockMvc.perform(post("/cateringJobs")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json().build().writeValueAsString(cateringJob)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id", is(10)));
+                .andExpect(status().isCreated());
+    }
 
+    @Test
+    public void whenPUTExistingCateringJob_UpdateAndReturnSuccess() throws Exception{
+        //given
+        CateringJob cateringJob = CateringJob.builder()
+                .id(10L)
+                .customerName("Mary")
+                .email("mary@mary.com")
+                .menu("Standard")
+                .noOfGuests(50)
+                .status(Status.NOT_STARTED)
+                .build();
+        given(cateringJobRepository.existsById(anyLong())).willReturn(true);
+        given(cateringJobRepository.save(any(CateringJob.class))).willReturn(cateringJob);
+
+        //when //then
+        mockMvc.perform(put("/cateringJobs/10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json().build().writeValueAsString(cateringJob)))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    public void whenPUTNotExistCateringJob_ReturnNOT_FOUND() throws Exception{
+        //given
+        CateringJob cateringJob = CateringJob.builder()
+                .id(10L)
+                .customerName("Mary")
+                .email("mary@mary.com")
+                .menu("Standard")
+                .noOfGuests(50)
+                .status(Status.NOT_STARTED)
+                .build();
+        given(cateringJobRepository.existsById(anyLong())).willReturn(false);
+
+        //when //then
+        Exception thrown = Assertions.assertThrows(Exception.class, () -> {
+            mockMvc.perform(put("/cateringJobs/10")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(json().build().writeValueAsString(cateringJob)));
+        });
+        assertThat(thrown.getCause()).isInstanceOf(HttpClientErrorException.class);
+        assertThat(((HttpClientErrorException)thrown.getCause()).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 }
