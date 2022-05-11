@@ -1,7 +1,7 @@
 # spring-challenges-catering
 
 Spring Code Challenges proposed by a training on LinkedIn Learning: 
-https://www.linkedin.com/learning/spring-code-challenges/
+[Spring Code Challenges](www.linkedin.com/learning/spring-code-challenges)
 
 Each branch relates to a challenge:
 
