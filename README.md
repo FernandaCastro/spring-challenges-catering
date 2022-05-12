@@ -13,4 +13,5 @@ Branch | Description
 04-post_with_SpringREST          | Store a Catering Job in the database
 05-put_with_SpringREST           | Update a Catering Job in the database
 06-patch_with_SpringREST         | Update a Catering Job in the database
+07-exceptionHandler              | Global Exception handling with @ControllerAdvice and @ExceptionHandler
 

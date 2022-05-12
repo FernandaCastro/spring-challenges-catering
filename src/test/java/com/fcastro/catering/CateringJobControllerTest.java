@@ -23,8 +23,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.converter.json.Jackson2ObjectMapperBuilder.json;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -216,5 +215,19 @@ public class CateringJobControllerTest {
         });
         assertThat(thrown.getCause()).isInstanceOf(HttpClientErrorException.class);
         assertThat(((HttpClientErrorException)thrown.getCause()).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void givenNonExisting_whenFindById_ReturnHandledException() throws Exception {
+        //given
+        given(cateringJobRepository.findById(anyLong())).willReturn(Optional.ofNullable(null));
+
+        //when //then
+        mockMvc.perform(get("/cateringJobs/100"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status", is(HttpStatus.NOT_FOUND.value())))
+                .andExpect(jsonPath("$.errorType", is("HttpClientErrorException")))
+                .andExpect(jsonPath("$.errorMessage", is("Resource was not found.")))
+                .andExpect(jsonPath("$.path", is("/cateringJobs/100")));
     }
 }
