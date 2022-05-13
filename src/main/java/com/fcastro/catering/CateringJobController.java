@@ -1,10 +1,12 @@
 package com.fcastro.catering;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fcastro.catering.config.ImagesWebClient;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -14,6 +16,7 @@ import java.util.List;
 public class CateringJobController {
 
     private final CateringJobRepository cateringJobRepository;
+    private final ImagesWebClient imagesWebClient;
 
     @GetMapping
     public List<CateringJob> findAll() {
@@ -62,5 +65,10 @@ public class CateringJobController {
                     return cateringJobRepository.save(job);
                 })
                 .orElseThrow(()-> new HttpClientErrorException(HttpStatus.NOT_FOUND));
+    }
+
+    @GetMapping("/surpriseMe")
+    public Mono<String> getSurpriseImage() {
+        return imagesWebClient.getRandomImage();
     }
 }

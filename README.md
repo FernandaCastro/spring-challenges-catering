@@ -14,4 +14,5 @@ Branch | Description
 05-put_with_SpringREST           | Update a Catering Job in the database
 06-patch_with_SpringREST         | Update a Catering Job in the database
 07-exceptionHandler              | Global Exception handling with @ControllerAdvice and @ExceptionHandler
+08-provide_images_with_WebClient | Provide images for Client requests using WebClient
 
