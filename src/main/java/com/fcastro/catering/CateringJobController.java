@@ -2,6 +2,7 @@ package com.fcastro.catering;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fcastro.catering.config.ImagesWebClient;
+import com.fcastro.catering.config.Loggable;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,7 @@ public class CateringJobController {
     }
 
     @GetMapping("/{id}")
+    @Loggable
     public CateringJob findById(@PathVariable Long id) {
         return cateringJobRepository.findById(id)
                 .orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND));

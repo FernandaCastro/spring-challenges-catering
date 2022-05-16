@@ -3,10 +3,12 @@ package com.fcastro.catering;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fcastro.catering.config.ImagesWebClient;
 import com.jayway.jsonpath.internal.filter.ValueNodes;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -38,6 +40,8 @@ public class CateringJobControllerTest {
     MockMvc mockMvc;
     @MockBean
     CateringJobRepository cateringJobRepository;
+    @MockBean
+    ImagesWebClient imagesWebClient;
 
     @BeforeAll
     private static void fetchCateringJobList() {

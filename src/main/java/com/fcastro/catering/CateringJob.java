@@ -23,4 +23,17 @@ public class CateringJob {
     private String menu;
     private int noOfGuests;
     private Status status;
+
+    @Override
+    public String toString() {
+        return "CateringJob{" +
+                "id=" + id +
+                ", customerName='" + customerName + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", email='" + email + '\'' +
+                ", menu='" + menu + '\'' +
+                ", noOfGuests=" + noOfGuests +
+                ", status=" + status +
+                '}';
+    }
 }
