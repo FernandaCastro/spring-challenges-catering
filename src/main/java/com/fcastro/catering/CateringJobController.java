@@ -1,7 +1,8 @@
 package com.fcastro.catering;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fcastro.catering.config.ImagesWebClient;
+import com.fcastro.catering.client.Image;
+import com.fcastro.catering.client.ImagesWebClient;
 import com.fcastro.catering.config.Loggable;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -55,7 +56,7 @@ public class CateringJobController {
 
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.CREATED)
-    public CateringJob patchMenu(@RequestBody JsonNode json, @PathVariable Long id) {
+    public CateringJob patchMenu(@RequestBody() JsonNode json, @PathVariable Long id) {
         JsonNode menuJsonNode = json.get("menu");
         if (menuJsonNode == null){
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST);
@@ -70,7 +71,7 @@ public class CateringJobController {
     }
 
     @GetMapping("/surpriseMe")
-    public Mono<String> getSurpriseImage() {
+    public Mono<Image> getSurpriseImage() {
         return imagesWebClient.getRandomImage();
     }
 }

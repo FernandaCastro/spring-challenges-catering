@@ -10,7 +10,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 
 import static org.hamcrest.Matchers.startsWith;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 public class CateringJobControllerIntegrationTest {
 
@@ -27,6 +27,6 @@ public class CateringJobControllerIntegrationTest {
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON)
                 .expectBody(Image.class)
-                .value(image -> image.getImage(), startsWith(imageUrl));
+                .value(Image::getImage, startsWith(imageUrl));
     }
 }
