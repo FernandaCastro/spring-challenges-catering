@@ -1,10 +1,5 @@
 package com.fcastro.catering;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.internal.filter.ValueNodes;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,18 +7,17 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.util.NestedServletException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.converter.json.Jackson2ObjectMapperBuilder.json;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -34,8 +28,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = CateringJobController.class)
 public class CateringJobControllerTest {
     private static List<CateringJob> cateringJobList;
+
     @Autowired
     MockMvc mockMvc;
+
     @MockBean
     CateringJobRepository cateringJobRepository;
 
@@ -136,7 +132,7 @@ public class CateringJobControllerTest {
     }
 
     @Test
-    public void whenPUTNotExistCateringJob_ReturnNOT_FOUND(){
+    public void whenPUTNotExistCateringJob_ReturnNOT_FOUND() throws Exception{
         //given
         CateringJob cateringJob = CateringJob.builder()
                 .id(10L)
@@ -149,13 +145,10 @@ public class CateringJobControllerTest {
         given(cateringJobRepository.existsById(anyLong())).willReturn(false);
 
         //when //then
-        Exception thrown = Assertions.assertThrows(Exception.class, () -> {
-            mockMvc.perform(put("/cateringJobs/10")
+        mockMvc.perform(put("/cateringJobs/10")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(json().build().writeValueAsString(cateringJob)));
-        });
-        assertThat(thrown.getCause()).isInstanceOf(HttpClientErrorException.class);
-        assertThat(((HttpClientErrorException)thrown.getCause()).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+                            .content(json().build().writeValueAsString(cateringJob)))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -178,28 +171,25 @@ public class CateringJobControllerTest {
     }
 
     @Test
-    public void whenPATCHNotExistCateringJob_ReturnNOT_FOUND() {
+    public void whenPATCHNotExistCateringJob_ReturnNOT_FOUND() throws Exception{
         //given
         CateringJob cateringJob = CateringJob.builder()
                 .id(10L)
                 .menu("Standard")
                 .build();
-        given(cateringJobRepository.findById(anyLong())).willReturn(Optional.ofNullable(null));
+        given(cateringJobRepository.findById(anyLong())).willReturn(Optional.empty());
 
         String menuJsonNode = "{\"menu\":\"Special\"}";
 
         //when //then
-        Exception thrown = Assertions.assertThrows(Exception.class, () -> {
-            mockMvc.perform(patch("/cateringJobs/10")
+        mockMvc.perform(patch("/cateringJobs/10")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(menuJsonNode));
-        });
-        assertThat(thrown.getCause()).isInstanceOf(HttpClientErrorException.class);
-        assertThat(((HttpClientErrorException)thrown.getCause()).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+                    .content(menuJsonNode))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    public void whenPATCHNullMenu_ReturnBAD_REQUEST(){
+    public void whenPATCHNullMenu_ReturnBAD_REQUEST() throws Exception{
         //given
         CateringJob cateringJob = CateringJob.builder()
                 .id(10L)
@@ -208,19 +198,16 @@ public class CateringJobControllerTest {
         String menuJsonNode = "{}";
 
         //when //then
-        Exception thrown = Assertions.assertThrows(Exception.class, () -> {
-            mockMvc.perform(patch("/cateringJobs/10")
+        mockMvc.perform(patch("/cateringJobs/10")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(menuJsonNode));
-        });
-        assertThat(thrown.getCause()).isInstanceOf(HttpClientErrorException.class);
-        assertThat(((HttpClientErrorException)thrown.getCause()).getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+                    .content(menuJsonNode))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
     public void givenNonExisting_whenFindById_ReturnHandledException() throws Exception {
         //given
-        given(cateringJobRepository.findById(anyLong())).willReturn(Optional.ofNullable(null));
+        given(cateringJobRepository.findById(anyLong())).willReturn(Optional.empty());
 
         //when //then
         mockMvc.perform(get("/cateringJobs/100"))
