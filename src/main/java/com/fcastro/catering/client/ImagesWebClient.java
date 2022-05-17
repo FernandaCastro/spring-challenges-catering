@@ -1,4 +1,4 @@
-package com.fcastro.catering.config;
+package com.fcastro.catering.client;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,12 +18,12 @@ public class ImagesWebClient {
         this.imagesWebClient = WebClient.builder().baseUrl(IMAGE_API).build();
     }
 
-    public Mono<String>  getRandomImage(){
+    public Mono<Image>  getRandomImage(){
        return imagesWebClient.get()
                 .uri("/api")
                 .retrieve()
                 .onStatus(HttpStatus::is4xxClientError, response -> Mono.just(new HttpClientErrorException(HttpStatus.BAD_GATEWAY)))
 		        .onStatus(HttpStatus::is5xxServerError, response -> Mono.just(new HttpClientErrorException(HttpStatus.BAD_GATEWAY)))
-                .bodyToMono(String.class);
+                .bodyToMono(Image.class);
     }
 }
