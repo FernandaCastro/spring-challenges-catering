@@ -1,9 +1,7 @@
 package com.fcastro.catering;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.internal.filter.ValueNodes;
+import com.fcastro.catering.client.Image;
+import com.fcastro.catering.client.ImagesWebClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -12,9 +10,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.util.NestedServletException;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +21,9 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.*;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.converter.json.Jackson2ObjectMapperBuilder.json;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -34,10 +34,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = CateringJobController.class)
 public class CateringJobControllerTest {
     private static List<CateringJob> cateringJobList;
+
     @Autowired
     MockMvc mockMvc;
+
+    @Autowired
+    WebTestClient webClient;
+
     @MockBean
     CateringJobRepository cateringJobRepository;
+
+    @MockBean
+    ImagesWebClient imagesWebClient;
 
     @BeforeAll
     private static void fetchCateringJobList() {
@@ -229,5 +237,22 @@ public class CateringJobControllerTest {
                 .andExpect(jsonPath("$.errorType", is("HttpClientErrorException")))
                 .andExpect(jsonPath("$.errorMessage", is("Resource was not found.")))
                 .andExpect(jsonPath("$.path", is("/cateringJobs/100")));
+    }
+
+    @Test
+    public void whenSurpriseMe_ReturnImageURL() throws Exception{
+        //given
+        String imageUrl = "https://foodish-api.herokuapp.com/images/dessert/dessert32.jpg";
+
+        Mono<Image> imageMono = Mono.just(Image.builder().image(imageUrl).build());
+        given(imagesWebClient.getRandomImage()).willReturn(imageMono);
+
+        //when //then
+        webClient.get().uri("/cateringJobs/surpriseMe")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON)
+                .expectBody(Image.class)
+                .value(image -> image.getImage(), equalTo(imageUrl));
     }
 }

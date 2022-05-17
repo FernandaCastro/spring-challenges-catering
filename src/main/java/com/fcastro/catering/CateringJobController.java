@@ -1,7 +1,8 @@
 package com.fcastro.catering;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fcastro.catering.config.ImagesWebClient;
+import com.fcastro.catering.client.Image;
+import com.fcastro.catering.client.ImagesWebClient;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -68,7 +69,8 @@ public class CateringJobController {
     }
 
     @GetMapping("/surpriseMe")
-    public Mono<String> getSurpriseImage() {
+    @ResponseStatus(HttpStatus.OK)
+    public Mono<Image> getSurpriseImage() {
         return imagesWebClient.getRandomImage();
     }
 }
